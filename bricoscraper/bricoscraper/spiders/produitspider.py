@@ -6,6 +6,7 @@ from ..utils import (
     extract_int,
     remove_substring,
     convert_str_to_bool,
+    number_in_range,
 )
 
 
@@ -13,7 +14,7 @@ class ProduitSpider(scrapy.Spider):
     name = "produitspider"
     allowed_domains = ["venessens-parquet.com"]
     start_urls = [
-        "https://venessens-parquet.com/collection/les-parquets-dinterieur/parquets-motifs/dalles-de-versailles/"
+        "https://venessens-parquet.com/collection/les-parquets-dinterieur/parquet-massif/"
     ]
 
     def parse(self, response):
@@ -44,7 +45,7 @@ class ProduitSpider(scrapy.Spider):
             "url": url,
             "label": details.get("nom du produit"),
             "id": url.rstrip("/").split("/")[-1],
-            "ref_interne": response.css("span.reference::text").get(),
+            "ref_interne": extract_int(response.css("span.reference::text").get()),
             "categorie": response.xpath(
                 '//nav[@class="woocommerce-breadcrumb"]/a[3]/text()'
             ).get(),
@@ -70,10 +71,15 @@ class ProduitSpider(scrapy.Spider):
             "essence": details.get("essence de bois"),
             "caractere": details.get("caractere"),
             "finition": details.get("finition"),
-            "epaisseur_mm": extract_int(details.get("epaisseur")),
-            "longueur_mm": extract_int(details.get("longueur")),
-            "largeur_mm": extract_int(details.get("largeur")),
-            "couche_usure_mm": extract_int(details.get("couche dusure")),
+            "epaisseur_mm": number_in_range(
+                extract_int(details.get("epaisseur")), 0, 100
+            ),  # On renvoie None si l'épaisseur n'est pas comprise entre 0 et 100mm
+            "largeur_mm": number_in_range(
+                extract_int(details.get("largeur")), 30
+            ),  # On renvoie None si la largeur n'est pas supérieure à 30mm
+            "couche_usure_mm": number_in_range(
+                extract_int(details.get("couche dusure")), 0, 30
+            ),  # On renvoie None si la couche d'usure est supérieur à 30mm
             "type_lame": details.get("type de lame"),
             "chanfrein": details.get("chanfrein"),
         }

@@ -37,3 +37,15 @@ def convert_str_to_bool(str):
     if str == "non":
         return False
     return None
+
+
+def number_in_range(value, min_value=None, max_value=None):
+    try:
+        value = float(value)
+    except (ValueError, TypeError):
+        return None
+    if min_value is not None and value < min_value:
+        return None
+    if max_value is not None and value > max_value:
+        return None
+    return value
