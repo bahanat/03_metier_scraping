@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from scrapy import signals
 from urllib.parse import urlencode
 import requests
+from random import randint
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -152,6 +153,16 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
         json_reponse = reponse.json()
         self.faux_entetes_navigateur = json_reponse.get("result", [])
 
+    def _get_faux_entete_navigateur_aleatoire(self) -> dict:
+        """Retourne un faux en-tete de navigateur aléatoire parmi
+        la liste de faux en-tetes contenue dans **self**.
+
+        Returns:
+            dict: Le faux en-tete de navigateur aléatoire
+        """
+        random_index = randint(0, len(self.faux_entetes_navigateur) - 1)
+        return self.faux_entetes_navigateur[random_index]
+
 
 ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ##
 
@@ -160,9 +171,10 @@ def test():
     settings = {
         "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_CIBLE": "https://headers.scrapeops.io/v1/browser-headers",
         "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ACTIVE": True,
-        "SCRAPEOPS_NB_RESULTATS": 2,
+        "SCRAPEOPS_NB_RESULTATS": 10,
     }
 
+    # Test du constructeur (avec liste de faux en-tetes de navigateur)
     test1 = ScrapeOpsFauxEnTeteNavigateurMiddleware(settings)
     print(test1.scrapeops_cle_api)
     print(test1.scrapeops_cible)
@@ -170,6 +182,14 @@ def test():
     print(test1.scrapeops_nb_resultats)
     for entete in test1.faux_entetes_navigateur:
         print(entete)
+
+    # Test de la sélection aléatoire d'un faux en-tete de navigateur
+    print("\n************\n")
+    print(test1._get_faux_entete_navigateur_aleatoire())
+    print(test1._get_faux_entete_navigateur_aleatoire())
+    print(test1._get_faux_entete_navigateur_aleatoire())
+    print(test1._get_faux_entete_navigateur_aleatoire())
+    print(test1._get_faux_entete_navigateur_aleatoire())
 
 
 if __name__ == "__main__":
