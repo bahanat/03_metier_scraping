@@ -5,6 +5,8 @@
 import os
 from dotenv import load_dotenv
 from scrapy import signals
+from urllib.parse import urlencode
+import requests
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
@@ -115,17 +117,15 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
             settings (dict): Les paramètres de configuration
         """
         # Clé API depuis le fichier .env
-        self.scrapeops_api_key = os.getenv("SCRAPEOPS_API_KEY")
+        self.scrapeops_cle_api = os.getenv("SCRAPEOPS_API_KEY")
         # Autres informations depuis settings.py
-        self.scrapeops_endpoint = settings.get(
-            "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ENDPOINT"
-        )
+        self.scrapeops_cible = settings.get("SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_CIBLE")
         self.scrapeops_active = settings.get(
             "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ACTIVE", False
         )
         self.scrapeops_nb_resultats = settings.get("SCRAPEOPS_NB_RESULTATS")
-        self.headers_list = []
-        # self._get_headers_list()
+        self.faux_entetes_navigateur = []
+        self._get_faux_entetes_navigateur()
         # self._scrapeops_fake_browser_headers_enabled()
 
     @classmethod
@@ -136,3 +136,41 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
             crawler (?): Le crawler
         """
         return cls(crawler.settings)
+
+    def _get_faux_entetes_navigateur(self):
+        """Fais la requete à scrapeops.io d'une liste de faux
+        en-tetes de navigateur. Le résultat est intégré à **self**.
+        """
+
+        # Récupération des parametres
+        parametres = {"api_key": self.scrapeops_cle_api}
+        if self.scrapeops_nb_resultats is not None:
+            parametres["num_results"] = self.scrapeops_nb_resultats
+
+        # Envoi de la requete à scrapeops.io
+        reponse = requests.get(self.scrapeops_cible, params=urlencode(parametres))
+        json_reponse = reponse.json()
+        self.faux_entetes_navigateur = json_reponse.get("result", [])
+
+
+## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ##
+
+
+def test():
+    settings = {
+        "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_CIBLE": "https://headers.scrapeops.io/v1/browser-headers",
+        "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ACTIVE": True,
+        "SCRAPEOPS_NB_RESULTATS": 2,
+    }
+
+    test1 = ScrapeOpsFauxEnTeteNavigateurMiddleware(settings)
+    print(test1.scrapeops_cle_api)
+    print(test1.scrapeops_cible)
+    print(test1.scrapeops_active)
+    print(test1.scrapeops_nb_resultats)
+    for entete in test1.faux_entetes_navigateur:
+        print(entete)
+
+
+if __name__ == "__main__":
+    test()

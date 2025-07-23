@@ -23,7 +23,7 @@ USER_AGENT = (
 
 # ScrapeOps: API permettant de récupérer de faux en-têtes de navigateur
 # les configurations suivantes gèrent ainsi la rotation de faux en-tetes de navigateur lors des requêtes pour éviter d'être bloqué
-SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ENDPOINT = (
+SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_CIBLE = (
     "https://headers.scrapeops.io/v1/browser-headers"
 )
 SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ACTIVE = True
