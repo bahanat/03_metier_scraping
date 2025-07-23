@@ -2,11 +2,14 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
+import os
+from dotenv import load_dotenv
 from scrapy import signals
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+load_dotenv()
 
 
 class BricoscraperSpiderMiddleware:
@@ -104,4 +107,32 @@ class BricoscraperDownloaderMiddleware:
 
 
 class ScrapeOpsFauxEnTeteNavigateurMiddleware:
-    pass
+
+    def __init__(self, settings):
+        """Construit l'instance à partir d'un dictionnaire de configuration
+
+        Args:
+            settings (dict): Les paramètres de configuration
+        """
+        # Clé API depuis le fichier .env
+        self.scrapeops_api_key = os.getenv("SCRAPEOPS_API_KEY")
+        # Autres informations depuis settings.py
+        self.scrapeops_endpoint = settings.get(
+            "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ENDPOINT"
+        )
+        self.scrapeops_active = settings.get(
+            "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ACTIVE", False
+        )
+        self.scrapeops_nb_resultats = settings.get("SCRAPEOPS_NB_RESULTATS")
+        self.headers_list = []
+        # self._get_headers_list()
+        # self._scrapeops_fake_browser_headers_enabled()
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        """Constructeur alternatif à partir d'un crawler
+
+        Args:
+            crawler (?): Le crawler
+        """
+        return cls(crawler.settings)
