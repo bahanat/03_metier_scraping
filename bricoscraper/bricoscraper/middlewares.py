@@ -127,7 +127,7 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
         self.scrapeops_nb_resultats = settings.get("SCRAPEOPS_NB_RESULTATS")
         self.faux_entetes_navigateur = []
         self._get_faux_entetes_navigateur()
-        # self._scrapeops_fake_browser_headers_enabled()
+        self._scrapeops_faux_entetes_navigateur_active()
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -163,6 +163,73 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
         random_index = randint(0, len(self.faux_entetes_navigateur) - 1)
         return self.faux_entetes_navigateur[random_index]
 
+    def _scrapeops_faux_entetes_navigateur_active(self):
+        """Vérifie les parametres ScrapeOps et modifie l'activation
+        de l'utilisation de faux en-tetes de navigation en fonction de leur cohérence.
+        """
+
+        if (
+            self.scrapeops_cle_api is None
+            or self.scrapeops_cle_api == ""
+            or self.scrapeops_active == False
+        ):
+            self.scrapeops_active = False
+        else:
+            self.scrapeops_active = True
+
+    def process_request(self, request, spider):
+        # Called for each request that goes through the downloader
+        # middleware.
+
+        # Must either:
+        # - return None: continue processing this request
+        # - or return a Response object
+        # - or return a Request object
+        # - or raise IgnoreRequest: process_exception() methods of
+        #   installed downloader middleware will be called
+        """Lance la requête avec un en-tete de navigateur généré
+        aléatoirement par scrapeops.io
+
+        Args:
+            request (Request): La requête a exécuter
+            spider (Spider): La spider réalisant le scraping
+        """
+        entete_navigateur_aleatoire = self._get_faux_entete_navigateur_aleatoire()
+
+        # Utilisation de la totalité d'un faux en-tete de navigateur, ou ...
+        # request.headers = entete_navigateur_aleatoire
+        # ... Utilisation partielle de certains champs d'un faux en-tete de navigateur
+        request.headers["sec-fetch-user"] = entete_navigateur_aleatoire.get(
+            "sec-fetch-user"
+        )
+        request.headers["sec-fetch-mod"] = entete_navigateur_aleatoire.get(
+            "sec-fetch-mod"
+        )
+        request.headers["sec-fetch-site"] = entete_navigateur_aleatoire.get(
+            "sec-fetch-site"
+        )
+        request.headers["sec-ch-ua-platform"] = entete_navigateur_aleatoire.get(
+            "sec-ch-ua-platform"
+        )
+        request.headers["sec-ch-ua-mobile"] = entete_navigateur_aleatoire.get(
+            "sec-ch-ua-mobile"
+        )
+        request.headers["sec-ch-ua"] = entete_navigateur_aleatoire.get("sec-ch-ua")
+        request.headers["accept"] = entete_navigateur_aleatoire.get("accept")
+        request.headers["accept-language"] = entete_navigateur_aleatoire.get(
+            "accept-language"
+        )
+        request.headers["accept-encoding"] = entete_navigateur_aleatoire.get(
+            "accept-encoding"
+        )
+        request.headers["user-agent"] = entete_navigateur_aleatoire.get("user-agent")
+        request.headers["upgrade-insecure-requests"] = entete_navigateur_aleatoire.get(
+            "upgrade-insecure-requests"
+        )
+
+        print("*******Nouvel en-tête de navigateur intégré à la requête*******")
+        print(request.headers)
+
 
 ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ## TEST ##
 
@@ -190,6 +257,11 @@ def test():
     print(test1._get_faux_entete_navigateur_aleatoire())
     print(test1._get_faux_entete_navigateur_aleatoire())
     print(test1._get_faux_entete_navigateur_aleatoire())
+
+    # Test de la sélection aléatoire d'un faux en-tete de navigateur
+    print("\n************\n")
+    print(test1._scrapeops_faux_entetes_navigateur_active())
+    print(test1.scrapeops_active)
 
 
 if __name__ == "__main__":
