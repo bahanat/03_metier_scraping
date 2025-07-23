@@ -1,10 +1,19 @@
 import scrapy
 
 
-class ProduitspiderSpider(scrapy.Spider):
+class ProduitSpider(scrapy.Spider):
     name = "produitspider"
     allowed_domains = ["venessens-parquet.com"]
-    start_urls = ["https://venessens-parquet.com/"]
+    start_urls = ["https://venessens-parquet.com/collection/les-parquets-dinterieur/parquet-massif/"]
 
     def parse(self, response):
-        pass
+        produits = response.css('ul.products li.product')
+
+        for produit in produits:
+
+            yield {
+                'label' : produit.css('h2::text').get(),
+                'prix_ht' : produit.css('span.price bdi::text').get(),
+                'prix_ttc' : produit.css('span.priceRight bdi::text').get(),
+                'url' : produit.css('a::attr("href")').get()
+            }
