@@ -81,7 +81,11 @@ ROBOTSTXT_OBEY = True
 
 
 # Gestion de l'export des données (générale)
-FEEDS = {'data/test.csv': {"format": "csv", "overwrite": True}}
+FEEDS = {"data/test.csv": {"format": "csv", "overwrite": True}}
+
+# Gestion de la lenteur du crawling et des requetes en parallèle
+DOWNLOAD_DELAY = 1
+CONCURRENT_REQUESTS_PER_DOMAIN = 1
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
