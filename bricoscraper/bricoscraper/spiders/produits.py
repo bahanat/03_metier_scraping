@@ -1,5 +1,6 @@
 import scrapy
 
+from ..items import ProduitItem
 from ..utils import (
     extraire_devise,
     extraire_float,
@@ -16,6 +17,9 @@ class ProduitsSpider(scrapy.Spider):
     start_urls = [
         "https://venessens-parquet.com/collection/les-parquets-dinterieur/parquet-massif/"
     ]
+    custom_settings = {
+        "FEEDS": {f"data/{name}.csv": {"format": "csv", "overwrite": True}}
+    }
 
     def parse(self, response):
         produits = response.css("ul.products li.product")
@@ -44,45 +48,47 @@ class ProduitsSpider(scrapy.Spider):
             )
         }
 
-        yield {
-            "url": url_produit,
-            "label": details.get("nom du produit"),
-            "id_produit": url_produit.rstrip("/").split("/")[-1],
-            "ref_interne": supprimer_substring(
-                response.css("span.reference::text").get(), "Ref: "
-            ),
-            "id_categorie": url_categories[-1].rstrip("/").split("/")[-1],
-            "url_image": response.css(
-                'div.woocommerce-product-gallery__image a::attr("href")'
-            ).get(),
-            "prix_ht": extraire_float(response.css("span.prix::text").get()),
-            "prix_ttc": extraire_float(response.css("span.tva::text").get()),
-            "devise": extraire_devise(response.css("span.prix::text").get()),
-            "type_prix": response.css("span.prix::text").get().split("/")[-1],
-            "description": response.css(
-                "div.elementor-widget-woocommerce-product-content p::text"
-            ).get(),
-            "disponibilite": supprimer_substring(
-                response.css("span.disponibilite::text").get(), "Disponibilité "
-            ),
-            "origine": details.get("fabrication"),
-            "normes": details.get("normes"),
-            "compatibilite_cas": convert_str_en_bool(
-                details.get("compatible sol chauffant")
-            ),
-            "teinte": details.get("teinte"),
-            "essence": details.get("essence de bois"),
-            "caractere": details.get("caractere"),
-            "finition": details.get("finition"),
-            "epaisseur_mm": nombre_compris_entre(
-                extraire_int(details.get("epaisseur")), 0, 100
-            ),  # On renvoie -1 si l'épaisseur n'est pas comprise entre 0 et 100mm
-            "largeur_mm": nombre_compris_entre(
-                extraire_int(details.get("largeur")), 30
-            ),  # On renvoie -1 si la largeur n'est pas supérieure à 30mm
-            "couche_usure_mm": nombre_compris_entre(
-                extraire_int(details.get("couche dusure")), 0, 30
-            ),  # On renvoie -1 si la couche d'usure est supérieur à 30mm
-            "type_lame": details.get("type de lame"),
-            "chanfrein": details.get("chanfrein"),
-        }
+        item = ProduitItem()
+
+        item["url"] = url_produit
+        item["label"] = details.get("nom du produit")
+        item["id"] = url_produit.rstrip("/").split("/")[-1]
+        item["ref_interne"] = supprimer_substring(
+            response.css("span.reference::text").get(), "Ref: "
+        )
+        item["id_categorie"] = url_categories[-1].rstrip("/").split("/")[-1]
+        item["url_image"] = response.css(
+            'div.woocommerce-product-gallery__image a::attr("href")'
+        ).get()
+        item["prix_ht"] = extraire_float(response.css("span.prix::text").get())
+        item["prix_ttc"] = extraire_float(response.css("span.tva::text").get())
+        item["devise"] = extraire_devise(response.css("span.prix::text").get())
+        item["type_prix"] = response.css("span.prix::text").get().split("/")[-1]
+        item["description"] = response.css(
+            "div.elementor-widget-woocommerce-product-content p::text"
+        ).get()
+        item["disponibilite"] = supprimer_substring(
+            response.css("span.disponibilite::text").get(), "Disponibilité "
+        )
+        item["origine"] = details.get("fabrication")
+        item["normes"] = details.get("normes")
+        item["compatibilite_cas"] = convert_str_en_bool(
+            details.get("compatible sol chauffant")
+        )
+        item["teinte"] = details.get("teinte")
+        item["essence"] = details.get("essence de bois")
+        item["caractere"] = details.get("caractere")
+        item["finition"] = details.get("finition")
+        item["epaisseur_mm"] = nombre_compris_entre(
+            extraire_int(details.get("epaisseur")), 0, 100
+        )  # On renvoie -1 si l'épaisseur n'est pas comprise entre 0 et 100mm
+        item["largeur_mm"] = nombre_compris_entre(
+            extraire_int(details.get("largeur")), 30
+        )  # On renvoie -1 si la largeur n'est pas supérieure à 30mm
+        item["couche_usure_mm"] = nombre_compris_entre(
+            extraire_int(details.get("couche dusure")), 0, 30
+        )  # On renvoie -1 si la couche d'usure est supérieur à 30mm
+        item["type_lame"] = details.get("type de lame")
+        item["chanfrein"] = details.get("chanfrein")
+
+        yield item
