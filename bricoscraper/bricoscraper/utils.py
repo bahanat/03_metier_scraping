@@ -55,6 +55,30 @@ def extraire_int(str: str):
     return int(float(result.group().replace(",", "."))) if result else None
 
 
+def extraire_type_prix(str: str):
+    """
+    Extrait la partie après le dernier "/" dans une chaîne de caractères donnée.
+
+    Si la chaîne est vide, None ou ne contient pas de "/", la fonction
+    retourne la valeur par défaut "u" pour "unitaire".
+
+    Args:
+        str (str): Chaîne de caractères représentant un prix potentiellement
+                   suivi d'un type séparé par un "/".
+
+    Returns:
+        str or None: La partie de la chaîne après le dernier "/", ou "u"
+                     si cette partie est absente, ou None si la chaîne est None ou vide.
+    """
+    if not str:
+        return None
+    parts = str.split("/")
+    if len(parts) > 1 and parts[-1].strip():
+        return parts[-1].strip()
+    else:
+        return "u"
+
+
 def supprimer_substring(str_complete: str, a_supprimer: str):
     """
     Supprime toutes les occurrences d'une sous-chaîne dans une chaîne complète.
@@ -114,7 +138,7 @@ def nombre_compris_entre(
     try:
         nbr = float(nbr)
     except (ValueError, TypeError):
-        return -1
+        return None
     if valeur_min is not None and nbr < valeur_min:
         return -1
     if valeur_max is not None and nbr > valeur_max:
