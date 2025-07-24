@@ -84,7 +84,7 @@ class ProduitsSpider(scrapy.Spider):
             extraire_int(details.get("epaisseur")), 0, 100
         )  # On renvoie -1 si l'épaisseur n'est pas comprise entre 0 et 100mm
         item["largeur_mm"] = nombre_compris_entre(
-            extraire_int(details.get("largeur")), 30, 220
+            extraire_int(details.get("largeur")), 30, 240
         )  # On renvoie -1 si la largeur n'est pas comprise entre 30 et 240mm
         item["couche_usure_mm"] = nombre_compris_entre(
             extraire_int(details.get("couche dusure")), 0, 30
