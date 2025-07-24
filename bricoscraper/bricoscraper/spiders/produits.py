@@ -5,6 +5,7 @@ from ..utils import (
     extraire_devise,
     extraire_float,
     extraire_int,
+    extraire_type_prix,
     supprimer_substring,
     convert_str_en_bool,
     nombre_compris_entre,
@@ -63,7 +64,7 @@ class ProduitsSpider(scrapy.Spider):
         item["prix_ht"] = extraire_float(response.css("span.prix::text").get())
         item["prix_ttc"] = extraire_float(response.css("span.tva::text").get())
         item["devise"] = extraire_devise(response.css("span.prix::text").get())
-        item["type_prix"] = response.css("span.prix::text").get().split("/")[-1]
+        item["type_prix"] = extraire_type_prix(response.css("span.prix::text").get())
         item["description"] = response.css(
             "div.elementor-widget-woocommerce-product-content p::text"
         ).get()
@@ -83,8 +84,8 @@ class ProduitsSpider(scrapy.Spider):
             extraire_int(details.get("epaisseur")), 0, 100
         )  # On renvoie -1 si l'épaisseur n'est pas comprise entre 0 et 100mm
         item["largeur_mm"] = nombre_compris_entre(
-            extraire_int(details.get("largeur")), 30
-        )  # On renvoie -1 si la largeur n'est pas supérieure à 30mm
+            extraire_int(details.get("largeur")), 30, 240
+        )  # On renvoie -1 si la largeur n'est pas comprise entre 30 et 240mm
         item["couche_usure_mm"] = nombre_compris_entre(
             extraire_int(details.get("couche dusure")), 0, 30
         )  # On renvoie -1 si la couche d'usure est supérieur à 30mm
