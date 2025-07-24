@@ -45,6 +45,7 @@ ROBOTSTXT_OBEY = True
 
 # Disable cookies (enabled by default)
 # COOKIES_ENABLED = False
+# COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
 # TELNETCONSOLE_ENABLED = False
@@ -76,10 +77,9 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    "bricoscraper.pipelines.BricoscraperPipeline": 300,
-# }
-
+ITEM_PIPELINES = {
+    "bricoscraper.pipelines.BricoscraperPipeline": 300,
+}
 
 # Gestion de l'export des données (générale)
 FEEDS = {"data/test.csv": {"format": "csv", "overwrite": True}}
