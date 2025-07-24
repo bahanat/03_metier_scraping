@@ -1,4 +1,6 @@
+import csv
 import scrapy
+from pathlib import Path
 
 from ..utils import (
     extraire_devise,
@@ -13,9 +15,18 @@ from ..utils import (
 class ProduitsSpider(scrapy.Spider):
     name = "produits"
     allowed_domains = ["venessens-parquet.com"]
-    start_urls = [
-        "https://venessens-parquet.com/collection/les-parquets-dinterieur/parquet-massif/"
-    ]
+    start_urls = []
+    if Path("data/categories.csv").exists():
+        try:
+            with open("data/categories.csv", mode="r") as fichier_categories:
+                reader_categories = csv.DictReader(fichier_categories)
+                for categorie in reader_categories:
+                    if categorie["contient_produits"] == str(True):
+                        start_urls.append(categorie["url"])
+        except:
+            raise Exception("Erreur de lecture du fichier data/categories.csv")
+    else:
+        raise Exception("Fichier data/categories.csv non trouvé.")
 
     def parse(self, response):
         produits = response.css("ul.products li.product")
