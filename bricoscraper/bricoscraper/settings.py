@@ -14,7 +14,20 @@ NEWSPIDER_MODULE = "bricoscraper.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0 Safari/537.36"
+# Note: Cette ligne permettra de spécifier toujours le même USER_AGENT à chaque requête
+# Attention: elle n'a pas la priorité sur la définition d'un user-agent dans les différentes fonctions de requetage
+USER_AGENT = (
+    "Formation Scrapy:projet Bricoscraper "
+    + "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0"
+)
+
+# ScrapeOps: API permettant de récupérer de faux en-têtes de navigateur
+# les configurations suivantes gèrent ainsi la rotation de faux en-tetes de navigateur lors des requêtes pour éviter d'être bloqué
+SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_CIBLE = (
+    "https://headers.scrapeops.io/v1/browser-headers"
+)
+SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ACTIVE = True
+SCRAPEOPS_NB_RESULTATS = 50
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -31,6 +44,7 @@ ROBOTSTXT_OBEY = True
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
+# COOKIES_ENABLED = False
 # COOKIES_ENABLED = False
 
 # Disable Telnet Console (enabled by default)
@@ -50,9 +64,10 @@ ROBOTSTXT_OBEY = True
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
+DOWNLOADER_MIDDLEWARES = {
 #    "bricoscraper.middlewares.BricoscraperDownloaderMiddleware": 543,
-# }
+    "bricoscraper.middlewares.ScrapeOpsFauxEnTeteNavigateurMiddleware": 100,
+}
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
@@ -65,6 +80,13 @@ ROBOTSTXT_OBEY = True
 ITEM_PIPELINES = {
     "bricoscraper.pipelines.BricoscraperPipeline": 300,
 }
+
+# Gestion de l'export des données (générale)
+FEEDS = {"data/test.csv": {"format": "csv", "overwrite": True}}
+
+# Gestion de la lenteur du crawling et des requetes en parallèle
+DOWNLOAD_DELAY = 1
+CONCURRENT_REQUESTS_PER_DOMAIN = 1
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
