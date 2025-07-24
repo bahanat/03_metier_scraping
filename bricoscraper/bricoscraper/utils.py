@@ -1,146 +1,132 @@
 import re
 
 
-def extraire_devise(str: str):
+def extraire_devise(chaine: str) -> str | None:
     """
-    Extrait le symbole de la devise (€,$,£) contenu dans une chaîne de caractères.
+    Extrait le symbole de la devise (€,$,£) dans une chaîne.
 
     Args:
-        str (str): La chaîne de caractères à analyser.
+        chaine (str): La chaîne à analyser.
 
     Returns:
-        str | None: Le symbole de la devise trouvé, ou None s'il n'y en a pas.
+        str ou None: Le symbole de la devise, ou None si absent.
     """
-    if not str:
+    if not chaine:
         return None
-    devise = re.search(r"([€$£])", str)
+    devise = re.search(r"([€$£])", chaine)
     return devise.group(1) if devise else None
 
 
-def extraire_float(str: str):
+def extraire_float(chaine: str) -> float | None:
     """
-    Extrait une valeur numérique à virgule flottante depuis une chaîne de caractères.
-
-    Recherche une suite de chiffres, éventuellement avec une virgule ou un point comme séparateur
-    décimal, et convertit en float.
+    Extrait un nombre décimal depuis une chaîne.
 
     Args:
-        str (str): La chaîne de caractères contenant un nombre.
+        chaine (str): Chaîne contenant un nombre.
 
     Returns:
-        float | None: La valeur flottante extraite, ou None si aucun nombre trouvé.
+        float ou None: La valeur extraite, ou None si absence.
     """
-    if not str:
+    if not chaine:
         return None
-    result = re.search(r"[\d.,]+", str)
+    result = re.search(r"[\d.,]+", chaine)
     return float(result.group().replace(",", ".")) if result else None
 
 
-def extraire_int(str: str):
+def extraire_int(chaine: str) -> int | None:
     """
-    Extrait un entier depuis une chaîne de caractères.
-
-    Recherche une suite de chiffres éventuellement avec une virgule ou un point (extrait la partie avant conversion),
-    puis convertit en int.
+    Extrait un entier depuis une chaîne.
 
     Args:
-        str (str): La chaîne de caractères contenant un nombre entier.
+        chaine (str): Chaîne contenant un nombre entier.
 
     Returns:
-        int | None: L'entier extrait, ou None si aucun nombre trouvé.
+        int ou None: L'entier extrait, ou None si absence.
     """
-    if not str:
+    if not chaine:
         return None
-    result = re.search(r"[\d.,]+", str)
+    result = re.search(r"[\d.,]+", chaine)
     return int(float(result.group().replace(",", "."))) if result else None
 
 
-def extraire_type_prix(str: str):
+def extraire_type_prix(chaine: str) -> str | None:
     """
-    Extrait la partie après le dernier "/" dans une chaîne de caractères donnée.
-
-    Si la chaîne est vide, None ou ne contient pas de "/", la fonction
-    retourne la valeur par défaut "u" pour "unitaire".
+    Extrait la partie après le dernier "/" ou retourne "u".
 
     Args:
-        str (str): Chaîne de caractères représentant un prix potentiellement
-                   suivi d'un type séparé par un "/".
+        chaine (str): Chaîne avec un prix suivi optionnellement d'un type.
 
     Returns:
-        str or None: La partie de la chaîne après le dernier "/", ou "u"
-                     si cette partie est absente, ou None si la chaîne est None ou vide.
+        str ou None: Partie après "/", "u" si absente, ou None si chaîne vide.
     """
-    if not str:
+    if not chaine:
         return None
-    parts = str.split("/")
+    parts = chaine.split("/")
     if len(parts) > 1 and parts[-1].strip():
         return parts[-1].strip()
-    else:
-        return "u"
+    return "u"
 
 
-def supprimer_substring(str_complete: str, a_supprimer: str):
+def supprimer_substring(str_complete: str, a_supprimer: str) -> str:
     """
-    Supprime toutes les occurrences d'une sous-chaîne dans une chaîne complète.
+    Supprime toutes les occurrences de a_supprimer dans str_complete.
 
     Args:
-        str_complete (str): La chaîne de caractères originale.
-        a_supprimer (str): La sous-chaîne à supprimer.
+        str_complete (str): Chaîne originale.
+        a_supprimer (str): Sous-chaîne à supprimer.
 
     Returns:
-        str: La chaîne résultante après suppression.
-             Si l'une des chaînes est vide ou None, retourne la chaîne originale.
+        str: Chaîne résultat (identique si args vides).
     """
     if not str_complete or not a_supprimer:
         return str_complete
     return str_complete.replace(a_supprimer, "")
 
 
-def convert_str_en_bool(str: str):
+def convert_str_en_bool(chaine: str) -> bool | None:
     """
-    Convertit une chaîne de caractères française en booléen.
-
-    "oui" (insensible à la casse et aux espaces) devient True,
-    "non" devient False,
-    toute autre valeur ou None retourne None.
+    Convertit "oui" en True, "non" en False, sinon None.
 
     Args:
-        str (str): La chaîne à convertir.
+        chaine (str): Chaîne à convertir.
 
     Returns:
-        bool | None: Le booléen correspondant ou None si indéterminé.
+        bool ou None: Booléen correspondant, ou None sinon.
     """
-    if str is None:
+    if chaine is None:
         return None
-    str = str.strip().lower()
-    if str == "oui":
+    chaine = chaine.strip().lower()
+    if chaine == "oui":
         return True
-    if str == "non":
+    if chaine == "non":
         return False
     return None
 
 
 def nombre_compris_entre(
-    nbr: int | float, valeur_min: int | float = None, valeur_max: int | float = None
-):
+    nbr: int | float,
+    valeur_min: float = None,
+    valeur_max: float = None,
+) -> float | int | None:
     """
-    Vérifie si un nombre est compris entre une valeur minimale et une valeur maximale.
+    Vérifie que nbr est entre valeur_min et valeur_max.
 
     Args:
         nbr (int | float): Le nombre à vérifier.
-        valeur_min (int | float, optionnel): La valeur minimale incluse. Par défaut None (pas de min).
-        valeur_max (int | float, optionnel): La valeur maximale incluse. Par défaut None (pas de max).
+        valeur_min (float, optionnel): Min (inclu), par défaut None (pas de min).
+        valeur_max (float, optionnel): Max (inclu), par défaut None (pas de max).
 
     Returns:
-        float: Le nombre converti en float si dans l'intervalle.
-        -1: Si le nombre est hors bornes ou invalide (conversion impossible).
+        float ou int ou None: nbr flottant si valide,
+                             -1 si hors bornes,
+                             None si conversion impossible.
     """
     try:
-        nbr = float(nbr)
+        nbr_float = float(nbr)
     except (ValueError, TypeError):
         return None
-    if valeur_min is not None and nbr < valeur_min:
+    if valeur_min is not None and nbr_float < valeur_min:
         return -1
-    if valeur_max is not None and nbr > valeur_max:
+    if valeur_max is not None and nbr_float > valeur_max:
         return -1
-    return nbr
+    return nbr_float
