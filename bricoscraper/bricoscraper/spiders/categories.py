@@ -25,7 +25,7 @@ class CategoriesSpider(scrapy.Spider):
         ]
         for lien_categorie in liens_categories_dans_menu:
             yield scrapy.Request(lien_categorie, callback=self.parse_page_categorie)
-            return
+        return
 
     def parse_page_categorie(self, response: scrapy.http.Response):
         lien_premier_article = response.css(
