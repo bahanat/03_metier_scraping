@@ -47,7 +47,7 @@ class ProduitsSpider(scrapy.Spider):
         yield {
             "url": url_produit,
             "label": details.get("nom du produit"),
-            "id_produit": url_produit.rstrip("/").split("/")[-1],
+            "id": url_produit.rstrip("/").split("/")[-1],
             "ref_interne": supprimer_substring(
                 response.css("span.reference::text").get(), "Ref: "
             ),
