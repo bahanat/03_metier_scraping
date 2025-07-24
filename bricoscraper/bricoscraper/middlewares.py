@@ -2,11 +2,18 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
-
-from scrapy import signals
+import os
+from dotenv import load_dotenv
+from scrapy import signals, Request, Spider
+from scrapy.crawler import Crawler
+from urllib.parse import urlencode
+import requests
+from random import randint
 
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
+
+load_dotenv()
 
 
 class BricoscraperSpiderMiddleware:
@@ -101,3 +108,125 @@ class BricoscraperDownloaderMiddleware:
 
     def spider_opened(self, spider):
         spider.logger.info("Spider opened: %s" % spider.name)
+
+
+class ScrapeOpsFauxEnTeteNavigateurMiddleware:
+
+    def __init__(self, settings: dict):
+        """Construit l'instance à partir d'un dictionnaire de configuration
+
+        Args:
+            settings (dict): Les paramètres de configuration
+        """
+        # Clé API depuis le fichier .env
+        self.scrapeops_cle_api = os.getenv("SCRAPEOPS_API_KEY")
+        # Autres informations depuis settings.py
+        self.scrapeops_cible = settings.get("SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_CIBLE")
+        self.scrapeops_active = settings.get(
+            "SCRAPEOPS_FAUX_ENTETE_NAVIGATEUR_ACTIVE", False
+        )
+        self.scrapeops_nb_resultats = settings.get("SCRAPEOPS_NB_RESULTATS")
+        self.faux_entetes_navigateur = []
+        self._get_faux_entetes_navigateur()
+        self._scrapeops_faux_entetes_navigateur_active()
+
+    @classmethod
+    def from_crawler(cls, crawler: Crawler):
+        """Constructeur alternatif à partir d'un crawler
+
+        Args:
+            crawler (?): Le crawler
+        """
+        return cls(crawler.settings)
+
+    def _get_faux_entetes_navigateur(self):
+        """Fais la requete à scrapeops.io d'une liste de faux
+        en-tetes de navigateur. Le résultat est intégré à **self**.
+        """
+
+        # Récupération des parametres
+        parametres = {"api_key": self.scrapeops_cle_api}
+        if self.scrapeops_nb_resultats is not None:
+            parametres["num_results"] = self.scrapeops_nb_resultats
+
+        # Envoi de la requete à scrapeops.io
+        reponse = requests.get(self.scrapeops_cible, params=urlencode(parametres))
+        json_reponse = reponse.json()
+        self.faux_entetes_navigateur = json_reponse.get("result", [])
+
+    def _get_faux_entete_navigateur_aleatoire(self) -> dict:
+        """Retourne un faux en-tete de navigateur aléatoire parmi
+        la liste de faux en-tetes contenue dans **self**.
+
+        Returns:
+            dict: Le faux en-tete de navigateur aléatoire
+        """
+        random_index = randint(0, len(self.faux_entetes_navigateur) - 1)
+        return self.faux_entetes_navigateur[random_index]
+
+    def _scrapeops_faux_entetes_navigateur_active(self):
+        """Vérifie les parametres ScrapeOps et modifie l'activation
+        de l'utilisation de faux en-tetes de navigation en fonction de leur cohérence.
+        """
+
+        if (
+            self.scrapeops_cle_api is None
+            or self.scrapeops_cle_api == ""
+            or self.scrapeops_active == False
+        ):
+            self.scrapeops_active = False
+        else:
+            self.scrapeops_active = True
+
+    def process_request(self, request: Request, spider: Spider):
+        # Called for each request that goes through the downloader
+        # middleware.
+
+        # Must either:
+        # - return None: continue processing this request
+        # - or return a Response object
+        # - or return a Request object
+        # - or raise IgnoreRequest: process_exception() methods of
+        #   installed downloader middleware will be called
+        """Lance la requête avec un en-tete de navigateur généré
+        aléatoirement par scrapeops.io
+
+        Args:
+            request (Request): La requête a exécuter
+            spider (Spider): La spider réalisant le scraping
+        """
+        entete_navigateur_aleatoire = self._get_faux_entete_navigateur_aleatoire()
+
+        # Utilisation de la totalité d'un faux en-tete de navigateur, ou ...
+        # request.headers = entete_navigateur_aleatoire
+        # ... Utilisation partielle de certains champs d'un faux en-tete de navigateur
+        request.headers["sec-fetch-user"] = entete_navigateur_aleatoire.get(
+            "sec-fetch-user"
+        )
+        request.headers["sec-fetch-mod"] = entete_navigateur_aleatoire.get(
+            "sec-fetch-mod"
+        )
+        request.headers["sec-fetch-site"] = entete_navigateur_aleatoire.get(
+            "sec-fetch-site"
+        )
+        request.headers["sec-ch-ua-platform"] = entete_navigateur_aleatoire.get(
+            "sec-ch-ua-platform"
+        )
+        request.headers["sec-ch-ua-mobile"] = entete_navigateur_aleatoire.get(
+            "sec-ch-ua-mobile"
+        )
+        request.headers["sec-ch-ua"] = entete_navigateur_aleatoire.get("sec-ch-ua")
+        request.headers["accept"] = entete_navigateur_aleatoire.get("accept")
+        request.headers["accept-language"] = entete_navigateur_aleatoire.get(
+            "accept-language"
+        )
+        request.headers["accept-encoding"] = entete_navigateur_aleatoire.get(
+            "accept-encoding"
+        )
+        request.headers["user-agent"] = entete_navigateur_aleatoire.get("user-agent")
+        request.headers["upgrade-insecure-requests"] = entete_navigateur_aleatoire.get(
+            "upgrade-insecure-requests"
+        )
+
+        print("*******NOUVEL EN-TETE DE NAVIGATEUR INTEGRE A LA REQUETE*******")
+        print(request.headers)
