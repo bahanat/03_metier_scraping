@@ -19,13 +19,14 @@ class CategorieItem(scrapy.Item):
     contient_produits: bool = scrapy.Field()
     url: str = scrapy.Field()
 
+
 class ProduitItem(scrapy.Item):
-    
+
     id = scrapy.Field()
     ref_interne = scrapy.Field()
     label = scrapy.Field()
     id_categorie = scrapy.Field()
-    url= scrapy.Field()
+    url = scrapy.Field()
     url_image = scrapy.Field()
     devise = scrapy.Field()
     prix_ht = scrapy.Field()
@@ -38,7 +39,7 @@ class ProduitItem(scrapy.Item):
     compatibilite_cas = scrapy.Field()
     teinte = scrapy.Field()
     essence = scrapy.Field()
-    caractere =scrapy.Field()
+    caractere = scrapy.Field()
     finition = scrapy.Field()
     epaisseur_mm = scrapy.Field()
     largeur_mm = scrapy.Field()
