@@ -11,8 +11,10 @@ class BricoscraperItem(scrapy.Item):
     # name = scrapy.Field()
     pass
 
+
 class CategorieItem(scrapy.Item):
     id: str = scrapy.Field()
-    id_parent: str|None = scrapy.Field()
+    id_parent: str | None = scrapy.Field()
     libelle: str = scrapy.Field()
     contient_produits: bool = scrapy.Field()
+    url: str = scrapy.Field()

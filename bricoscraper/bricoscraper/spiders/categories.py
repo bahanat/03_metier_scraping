@@ -21,6 +21,7 @@ class CategoriesSpider(scrapy.Spider):
         ]
         for lien_categorie in liens_categories_dans_menu:
             yield scrapy.Request(lien_categorie, callback=self.parse_page_categorie)
+            return
 
     def parse_page_categorie(self, response: scrapy.http.Response):
         lien_premier_article = response.css(
@@ -28,8 +29,7 @@ class CategoriesSpider(scrapy.Spider):
         ).get()
         if lien_premier_article:
             yield scrapy.Request(
-                lien_premier_article,
-                callback=self.parse_premier_article
+                lien_premier_article, callback=self.parse_premier_article
             )
         else:
             self.logger.error(
@@ -46,22 +46,25 @@ class CategoriesSpider(scrapy.Spider):
                 "Liens de catégories non trouvés sur premier article ! Catégorie non prise en compte."
             )
             return
-        
-        if not(liste_liens_categories[-1] == response.request.headers.get('Referer').decode('utf-8')):
+
+        if not (
+            liste_liens_categories[-1]
+            == response.request.headers.get("Referer").decode("utf-8")
+        ):
             # les catégories ne concordent pas.
             # La catégorie est une catégorie secondaire.
             # On l'ignore.
             return
-        
+
         id_categories = []
         libelles_categories = response.css(
             ".woocommerce-breadcrumb > a:not(:first-child)::text"
         ).getall()
-        
+
         for lien_categorie in liste_liens_categories:
             # on récupère l'avant dernier élément du split (le dernier élément est une chaine vide car l'url finit par /)
             id_categories.append(lien_categorie.split("/")[-2])
-        
+
         # on enregistre la hiérarchie des catégories trouvées…
         for index_categorie in range(len(id_categories)):
             item_categorie = CategorieItem()
@@ -71,8 +74,9 @@ class CategoriesSpider(scrapy.Spider):
                 item_categorie["id_parent"] = None
             else:
                 item_categorie["id_parent"] = id_categories[index_categorie - 1]
-            if (index_categorie == (len(id_categories) - 1)):
+            if index_categorie == (len(id_categories) - 1):
                 item_categorie["contient_produits"] = True
             else:
                 item_categorie["contient_produits"] = False
+            item_categorie["url"] = liste_liens_categories[index_categorie]
             yield item_categorie
