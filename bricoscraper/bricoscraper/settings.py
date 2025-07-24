@@ -79,6 +79,10 @@ ROBOTSTXT_OBEY = True
 #    "bricoscraper.pipelines.BricoscraperPipeline": 300,
 # }
 
+
+# Gestion de l'export des données (générale)
+FEEDS = {'data/test.csv': {"format": "csv", "overwrite": True}}
+
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
 # AUTOTHROTTLE_ENABLED = True

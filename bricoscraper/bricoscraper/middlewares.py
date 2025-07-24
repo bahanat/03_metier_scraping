@@ -227,7 +227,7 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
             "upgrade-insecure-requests"
         )
 
-        print("*******Nouvel en-tête de navigateur intégré à la requête*******")
+        print("*******NOUVEL EN-TETE DE NAVIGATEUR INTEGRE A LA REQUETE*******")
         print(request.headers)
 
 

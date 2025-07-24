@@ -8,6 +8,10 @@ class CategoriesSpider(scrapy.Spider):
     allowed_domains = ["venessens-parquet.com"]
     start_urls = ["https://venessens-parquet.com"]
 
+    custom_settings = {
+        "FEEDS": {f"data/{name}.csv": {"format": "csv", "overwrite": True}}
+    }
+
     def parse(self, response: scrapy.http.Response):
 
         # On récupère les liens du menu susceptibles de pointer vers une catégorie.
