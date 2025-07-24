@@ -4,7 +4,8 @@
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 import os
 from dotenv import load_dotenv
-from scrapy import signals
+from scrapy import signals, Request, Spider
+from scrapy.crawler import Crawler
 from urllib.parse import urlencode
 import requests
 from random import randint
@@ -111,7 +112,7 @@ class BricoscraperDownloaderMiddleware:
 
 class ScrapeOpsFauxEnTeteNavigateurMiddleware:
 
-    def __init__(self, settings):
+    def __init__(self, settings: dict):
         """Construit l'instance à partir d'un dictionnaire de configuration
 
         Args:
@@ -130,7 +131,7 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
         self._scrapeops_faux_entetes_navigateur_active()
 
     @classmethod
-    def from_crawler(cls, crawler):
+    def from_crawler(cls, crawler: Crawler):
         """Constructeur alternatif à partir d'un crawler
 
         Args:
@@ -177,7 +178,7 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
         else:
             self.scrapeops_active = True
 
-    def process_request(self, request, spider):
+    def process_request(self, request: Request, spider: Spider):
         # Called for each request that goes through the downloader
         # middleware.
 
