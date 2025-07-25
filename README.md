@@ -1,4 +1,4 @@
-# projet de scraping et de structuration de données
+# Projet de scraping et de structuration de données
 
 ## AVERTISSEMENT
 
