@@ -15,6 +15,15 @@ from ..utils import (
 
 
 class ProduitsSpider(scrapy.Spider):
+    """
+    Spider Scrapy pour extraire tous les produits présents dans les catégories extraites préalablement.
+
+    Attributs :
+        name (str): Nom unique du spider.
+        allowed_domains (list): Liste des domaines autorisés à crawler.
+        custom_settings (dict): Configuration spécifique au spider (fichier de sortie, format).
+    """
+
     name = "produits"
     allowed_domains = ["venessens-parquet.com"]
     custom_settings = {
@@ -22,6 +31,12 @@ class ProduitsSpider(scrapy.Spider):
     }
 
     def start_requests(self):
+        """
+        Génère les requêtes initiales à partir des URLs de catégorie extraites dans 'data/categories.csv'.
+
+        Yields:
+            scrapy.Request: Une requête Scrapy pour chaque URL de catégorie contenant des produits.
+        """
         if Path("data/categories.csv").exists():
             try:
                 with open("data/categories.csv", mode="r") as fichier_categories:
@@ -35,6 +50,16 @@ class ProduitsSpider(scrapy.Spider):
             raise Exception("Fichier data/categories.csv non trouvé.")
 
     def parse(self, response):
+        """
+        Parse la page liste-produit d'une catégorie et génère une requête vers chaque page produit.
+        Suit également les liens vers les pages suivantes si la pagination est présente.
+
+        Args:
+            response (scrapy.http.Response): Réponse de la page de catégorie.
+
+        Yields:
+            scrapy.Request: Une requête vers chaque page produit ou vers la page suivante.
+        """
         produits = response.css("ul.products li.product")
 
         for produit in produits:
@@ -47,6 +72,15 @@ class ProduitsSpider(scrapy.Spider):
             yield response.follow(page_suivante, callback=self.parse)
 
     def parse_produit(self, response):
+        """
+        Récupère et structure toutes les informations d'un produit à partir de sa page détaillée.
+
+        Args:
+            response (scrapy.http.Response): Réponse de la page détail-produit.
+
+        Yields:
+            ProduitItem: Item Scrapy contenant toutes les informations structurées du produit.
+        """
         url_produit = response.url
         url_categories = response.xpath(
             '//nav[@class="woocommerce-breadcrumb"]/a/@href'
