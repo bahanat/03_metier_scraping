@@ -13,7 +13,7 @@ class BricoscraperItem(scrapy.Item):
 
 
 def serialize_string(string: str | None) -> str | None:
-    if string:
+    if isinstance(string, str) and string:
         return string.strip()
 
 
