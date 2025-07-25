@@ -6,7 +6,7 @@
 
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
-from scrapy import Spider
+from scrapy import Spider, Item
 from scrapy.exceptions import DropItem
 from .items import CategorieItem, ProduitItem
 
@@ -18,10 +18,26 @@ class BricoscraperSupprDoublonsPipeline:
         self.liste_urls_categories_traitees = set()
         self.liste_ids_produits_recuperes = set()
 
-    def process_item(self, item, spider: Spider):
+    def process_item(self, item: Item, spider: Spider):
+        """Cette méthode est appelé pour chaque **item** arrivant dans la pipeline.
+        Les items supprimés ne seront plus traités au delà de la pipeline.
+
+        Args:
+            item (Item): Un item arrivant dans la pipeline
+            spider (Spider): La spider responsable de la création des items
+
+        Raises:
+            DropItem: Catégorie déjà récupérée
+            DropItem: URL catégorie non trouvée
+            DropItem: Produit déjà récupérée
+            DropItem: ID produit non trouvée
+
+        Returns:
+            Item: L'item inchangée s'il n'a pas été supprimé
+        """
         adapter = ItemAdapter(item)
 
-        # Traitement des catégories
+        # Traitement des doublons des catégories
         if isinstance(item, CategorieItem):
             url = adapter.get("url")
             if url:
@@ -33,7 +49,7 @@ class BricoscraperSupprDoublonsPipeline:
                 spider.logger.error("URL non trouvée ! Catégorie supprimée.")
                 raise DropItem("URL non trouvée ! Catégorie supprimée.")
 
-        # Traitement des produits
+        # Traitement des doublons des produits
         elif isinstance(item, ProduitItem):
             key = adapter.get("id")
             if key:
@@ -52,7 +68,21 @@ class BricoscraperSupprDoublonsPipeline:
 # Pipeline dédié à la suppression des entrées reconnues comme aberrantes dans la base de données
 class BricoscraperNettoyagePipeline:
 
-    def process_item(self, item, spider: Spider):
+    def process_item(self, item: Item, spider: Spider):
+        """Cette méthode est appelé pour chaque **item** arrivant dans la pipeline.
+        Les items supprimés ne seront plus traités au delà de la pipeline.
+
+        Args:
+            item (Item): Un item arrivant dans la pipeline
+            spider (Spider): La spider responsable de la création des items
+
+        Raises:
+            DropItem: Produit aberrant
+            DropItem: Produi avec un non-string ID
+
+        Returns:
+            Item: L'item inchangée s'il n'a pas été supprimé
+        """
 
         # Traitement des produits
         if isinstance(item, ProduitItem):
@@ -71,7 +101,20 @@ class BricoscraperNettoyagePipeline:
 # Pipeline dédié à la transformation de certain champs pour les uniformiser dans la base de données
 class BricoScraperTransformPipeline:
 
-    def process_item(self, item, spider: Spider):
+    def process_item(self, item: Item, spider: Spider):
+        """Cette méthode est appelé pour chaque **item** arrivant dans la pipeline.
+        Les items supprimés ne seront plus traités au delà de la pipeline.
+
+        - mise en minuscule de certains champs
+        - valeur "u" par défaut pour le champ type_prix
+
+        Args:
+            item (Item): Un item arrivant dans la pipeline
+            spider (Spider): La spider responsable de la création des items
+
+        Returns:
+            Item: L'item modifiée si concernée par les transformations
+        """
 
         adapter = ItemAdapter(item)
         self.mise_en_minuscule(adapter)
