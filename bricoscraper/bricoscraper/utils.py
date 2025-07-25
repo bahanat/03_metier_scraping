@@ -107,7 +107,7 @@ def nombre_compris_entre(
     nbr: int | float,
     valeur_min: float = None,
     valeur_max: float = None,
-) -> float | int | None:
+) -> bool:
     """
     Vérifie que nbr est entre valeur_min et valeur_max.
 
@@ -117,16 +117,31 @@ def nombre_compris_entre(
         valeur_max (float, optionnel): Max (inclu), par défaut None (pas de max).
 
     Returns:
-        float ou int ou None: nbr flottant si valide,
-                             -1 si hors bornes,
-                             None si conversion impossible.
+        bool: True si nbr est compris entre valeur_min et valeur_max,
+              False sinon (hors bornes ou conversion impossible).
     """
     try:
         nbr_float = float(nbr)
     except (ValueError, TypeError):
-        return None
+        return False
     if valeur_min is not None and nbr_float < valeur_min:
-        return -1
+        return False
     if valeur_max is not None and nbr_float > valeur_max:
-        return -1
-    return nbr_float
+        return False
+    return True
+
+
+def str_finit_par(chaine: str, fin: str) -> bool:
+    """
+    Vérifie si la chaîne donnée, après suppression des espaces de début et de fin, finit par la chaîne `fin`.
+
+    Args:
+        chaine (str): La chaîne à tester.
+        fin (str): La sous-chaîne finale attendue.
+
+    Returns:
+        bool: True si `chaine.strip()` se termine par `fin`, False sinon.
+    """
+    if chaine is None or fin is None:
+        return False
+    return chaine.strip().endswith(fin)
