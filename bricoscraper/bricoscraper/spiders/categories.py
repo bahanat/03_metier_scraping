@@ -4,6 +4,32 @@ from ..items import CategorieItem
 
 
 class CategoriesSpider(scrapy.Spider):
+    """
+    Spider pour extraire la hiérarchie des catégories depuis le site venessens-parquet.com.
+
+    Ce spider parcourt le menu principal du site pour identifier les liens vers les catégories de produits.
+    Pour chaque catégorie trouvée, il visite la page de la catégorie, puis le premier article de cette catégorie,
+    afin d'extraire la hiérarchie complète des catégories à partir du fil d'Ariane (breadcrumb).
+    La catégorie n'est prise en compte que s'il y a concordance entre la catégorie traitée et celle du produit.
+    Car en cas de non concordance, la catégorie est une catégorie secondaire qui permet juste de regrouper des produits
+    qui possèdent leur propre catégorie. Dans ce cas, la catégorie traitée est à ignorer.
+
+    Attributs de classe :
+        name (str): Nom du spider.
+        allowed_domains (list): Liste des domaines autorisés.
+        start_urls (list): Liste des URLs de départ.
+        custom_settings (dict): Paramètres personnalisés pour l'export des données.
+
+    Méthodes :
+        parse(response):
+            Extrait les liens du menu susceptibles de pointer vers une catégorie et lance la requête sur chaque catégorie trouvée.
+
+        parse_page_categorie(response):
+            Extrait le lien du premier article de la catégorie et lance la requête pour extraire la hiérarchie des catégories.
+
+        parse_premier_article(response):
+            Extrait la hiérarchie des catégories à partir du fil d'Ariane du premier article et génère les items de catégorie.
+    """
     name = "categories"
     allowed_domains = ["venessens-parquet.com"]
     start_urls = ["https://venessens-parquet.com"]
@@ -13,6 +39,15 @@ class CategoriesSpider(scrapy.Spider):
     }
 
     def parse(self, response: scrapy.http.Response):
+        """
+        Analyse la page d'accueil pour extraire les liens du menu pointant vers les catégories.
+
+        Args:
+            response (scrapy.http.Response): La réponse HTTP de la page d'accueil.
+
+        Yields:
+            scrapy.Request: Requêtes vers les pages de catégories trouvées dans le menu.
+        """
 
         # On récupère les liens du menu susceptibles de pointer vers une catégorie.
         liens_menu = response.css(
@@ -28,6 +63,15 @@ class CategoriesSpider(scrapy.Spider):
         return
 
     def parse_page_categorie(self, response: scrapy.http.Response):
+        """
+        Analyse la page de catégorie pour extraire le lien du premier article.
+
+        Args:
+            response (scrapy.http.Response): La réponse HTTP de la page de catégorie.
+
+        Yields:
+            scrapy.Request: Requête vers la page du premier article de la catégorie.
+        """
         lien_premier_article = response.css(
             "ul.products li.product a.woocommerce-LoopProduct-link::attr(href)"
         ).get()
@@ -41,6 +85,24 @@ class CategoriesSpider(scrapy.Spider):
             )
 
     def parse_premier_article(self, response: scrapy.http.Response):
+        """
+        Analyse la page d'un premier article pour extraire la hiérarchie des catégories.
+        Cette méthode récupère les liens et libellés des catégories à partir du fil d'Ariane
+        (breadcrumb) de la page. Elle vérifie que la dernière catégorie correspond à la catégorie traitée
+        (qui correspond au référent de la requête pour s'assurer que la catégorie est principale.
+        Si ce n'est pas le cas, la catégorie est ignorée.
+        Pour chaque catégorie trouvée, un objet CategorieItem est généré avec :
+            - l'identifiant de la catégorie (extrait de l'URL),
+            - le libellé de la catégorie,
+            - l'identifiant du parent (None pour la racine),
+            - un indicateur si la catégorie contient des produits,
+            - l'URL de la catégorie.
+        Args:
+            response (scrapy.http.Response): La réponse HTTP de la page à analyser.
+        Yields:
+            CategorieItem: Un objet représentant une catégorie extraite de la hiérarchie.
+        """
+
         liste_liens_categories = response.css(
             ".woocommerce-breadcrumb > a:not(:first-child)::attr(href)"
         ).getall()
