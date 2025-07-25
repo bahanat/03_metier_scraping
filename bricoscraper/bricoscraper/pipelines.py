@@ -42,10 +42,15 @@ class BricoscraperCleaningPipeline:
         adapter = ItemAdapter(item)
 
         ## switch some fields to lowercase
-        lowercase_keys = ["id", "id_parent", "ref_interne", "id_categorie"]
-        for lowercase_key in lowercase_keys:
-            value = adapter.get(lowercase_key)
-            if isinstance(value, str):
-                adapter[lowercase_key] = value.lower()
+        champs_minuscules = ["id", "id_parent", "ref_interne", "id_categorie", "type_prix"]
+        for champ_minuscule in champs_minuscules:
+            valeur = adapter.get(champ_minuscule)
+            if isinstance(valeur, str):
+                adapter[champ_minuscule] = valeur.lower()
+
+        ## pas de chaine vide pour le type de prix, u par défaut
+        valeur = adapter.get("type_prix")
+        if isinstance(valeur, str) and not valeur:
+            adapter["type_prix"] = "u"
 
         return item
