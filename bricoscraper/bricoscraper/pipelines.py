@@ -11,7 +11,9 @@ from scrapy.exceptions import DropItem
 from .items import CategorieItem, ProduitItem
 
 
-class BricoscraperPipeline:
+# Pipeline dédié à la suppression des doublons dans la base de données
+class BricoscraperSupprDoublonsPipeline:
+
     def __init__(self):
         self.liste_urls_categories_traitees = set()
         self.liste_ids_produits_recuperes = set()
@@ -47,7 +49,8 @@ class BricoscraperPipeline:
         return item
 
 
-class BricoscraperCleaningPipeline:
+# Pipeline dédié à la suppression des entrées reconnues comme aberrantes dans la base de données
+class BricoscraperNettoyagePipeline:
 
     def process_item(self, item, spider: Spider):
 
@@ -65,6 +68,7 @@ class BricoscraperCleaningPipeline:
         return item
 
 
+# Pipeline dédié à la transformation de certain champs pour les uniformiser dans la base de données
 class BricoScraperTransformPipeline:
 
     def process_item(self, item, spider: Spider):

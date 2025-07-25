@@ -77,9 +77,9 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    #     "bricoscraper.pipelines.BricoscraperPipeline": 300,
-    "bricoscraper.pipelines.BricoscraperCleaningPipeline": 400,
-    "bricoscraper.pipelines.BricoScraperTransformPipeline": 500,
+    "bricoscraper.pipelines.BricoscraperSupprDoublonsPipeline": 100,
+    "bricoscraper.pipelines.BricoscraperNettoyagePipeline": 200,
+    "bricoscraper.pipelines.BricoScraperTransformPipeline": 300,
 }
 
 # Gestion de l'export des données (générale)
