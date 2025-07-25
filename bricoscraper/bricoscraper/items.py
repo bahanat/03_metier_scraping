@@ -12,11 +12,21 @@ class BricoscraperItem(scrapy.Item):
     pass
 
 
+# Collection de serializers
 def serialize_string(string: str | None) -> str | None:
+    """Supprime les espaces inutiles en début et fin de chaine.
+
+    Args:
+        string (str | None): La chaine de caractères arrivante (possiblement None)
+
+    Returns:
+        str | None: La chaine de caractères uniformisées (garde None dans le cas d'un None)
+    """
     if isinstance(string, str) and string:
         return string.strip()
 
 
+# Classe pour les catégories de produits
 class CategorieItem(scrapy.Item):
     id: str = scrapy.Field(serializer=serialize_string)
     id_parent: str | None = scrapy.Field(serializer=serialize_string)
@@ -25,6 +35,7 @@ class CategorieItem(scrapy.Item):
     url: str = scrapy.Field()
 
 
+# Classe pour les produits
 class ProduitItem(scrapy.Item):
     id: str = scrapy.Field(serializer=serialize_string)
     ref_interne: str = scrapy.Field(serializer=serialize_string)
