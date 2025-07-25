@@ -13,6 +13,7 @@ from random import randint
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
+# Récupérations des variables environnements (fichier .env)
 load_dotenv()
 
 
@@ -110,6 +111,7 @@ class BricoscraperDownloaderMiddleware:
         spider.logger.info("Spider opened: %s" % spider.name)
 
 
+# Middleware pour la rotation de faux en-tetes de navigateur
 class ScrapeOpsFauxEnTeteNavigateurMiddleware:
 
     def __init__(self, settings: dict):
@@ -135,7 +137,7 @@ class ScrapeOpsFauxEnTeteNavigateurMiddleware:
         """Constructeur alternatif à partir d'un crawler
 
         Args:
-            crawler (?): Le crawler
+            crawler (Crawler): Le crawler
         """
         return cls(crawler.settings)
 
