@@ -34,3 +34,18 @@ class BricoscraperPipeline:
             pass
 
         return item
+
+class BricoscraperCleaningPipeline:
+
+    def process_item(self, item, spider: Spider):
+
+        adapter = ItemAdapter(item)
+
+        ## switch some fields to lowercase
+        lowercase_keys = ["id", "id_parent", "ref_interne", "id_categorie"]
+        for lowercase_key in lowercase_keys:
+            value = adapter.get(lowercase_key)
+            if isinstance(value, str):
+                adapter[lowercase_key] = value.lower()
+
+        return item
