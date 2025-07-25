@@ -52,7 +52,6 @@ class ProduitItem(scrapy.Item):
     origine: str | None = scrapy.Field(serializer=serialize_string)
     normes: str | None = scrapy.Field(serializer=serialize_string)
     compatibilite_cas: bool | None = scrapy.Field(serializer=serialize_string)
-    teinte: str | None = scrapy.Field(serializer=serialize_string)
     essence: str | None = scrapy.Field(serializer=serialize_string)
     caractere: str | None = scrapy.Field(serializer=serialize_string)
     finition: str | None = scrapy.Field(serializer=serialize_string)

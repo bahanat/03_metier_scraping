@@ -11,6 +11,7 @@ from ..utils import (
     supprimer_substring,
     convert_str_en_bool,
     nombre_compris_entre,
+    str_finit_par,
 )
 
 
@@ -97,6 +98,14 @@ class ProduitsSpider(scrapy.Spider):
 
         item = ProduitItem()
 
+        # Récupération des strings originales (brutes) pour les dimensions et isolement des valeurs numériques
+        epaisseur_str = details.get("epaisseur")
+        epaisseur_int = extraire_int(epaisseur_str)
+        largeur_str = details.get("largeur")
+        largeur_int = extraire_int(largeur_str)
+        couche_usure_str = details.get("couche dusure")
+        couche_usure_int = extraire_int(couche_usure_str)
+
         item["url"] = url_produit
         item["label"] = details.get("nom du produit")
         item["id"] = url_produit.rstrip("/").split("/")[-1]
@@ -122,19 +131,40 @@ class ProduitsSpider(scrapy.Spider):
         item["compatibilite_cas"] = convert_str_en_bool(
             details.get("compatible sol chauffant")
         )
-        item["teinte"] = details.get("teinte")
         item["essence"] = details.get("essence de bois")
         item["caractere"] = details.get("caractere")
         item["finition"] = details.get("finition")
-        item["epaisseur_mm"] = nombre_compris_entre(
-            extraire_int(details.get("epaisseur")), 0, 100
-        )  # On renvoie -1 si l'épaisseur n'est pas comprise entre 0 et 100mm
-        item["largeur_mm"] = nombre_compris_entre(
-            extraire_int(details.get("largeur")), 30, 240
-        )  # On renvoie -1 si la largeur n'est pas comprise entre 30 et 240mm
-        item["couche_usure_mm"] = nombre_compris_entre(
-            extraire_int(details.get("couche dusure")), 0, 30
-        )  # On renvoie -1 si la couche d'usure est supérieur à 30mm
+
+        # On renvoie -1 si l'épaisseur n'est pas une dimension en mm et/ou pas comprise entre 0-100mm
+        if epaisseur_str is None:
+            item["epaisseur_mm"] = None
+        elif str_finit_par(epaisseur_str, "mm") and nombre_compris_entre(
+            epaisseur_int, 0, 100
+        ):
+            item["epaisseur_mm"] = epaisseur_int
+        else:
+            item["epaisseur_mm"] = -1
+
+        # On renvoie -1 si la largeur n'est pas une dimension en mm et/ou pas comprise entre 30-240mm
+        if largeur_str is None:
+            item["largeur_mm"] = None
+        elif str_finit_par(largeur_str, "mm") and nombre_compris_entre(
+            largeur_int, 0, 100
+        ):
+            item["largeur_mm"] = largeur_int
+        else:
+            item["largeur_mm"] = -1
+
+        # On renvoie -1 si la couche d'usure n'est pas une dimension en mm et/ou pas supérieure à 30mm
+        if couche_usure_str is None:
+            item["couche_usure_mm"] = None
+        elif str_finit_par(couche_usure_str, "mm") and nombre_compris_entre(
+            couche_usure_int, 0, 100
+        ):
+            item["couche_usure_mm"] = couche_usure_int
+        else:
+            item["couche_usure_mm"] = -1
+
         item["type_lame"] = details.get("type de lame")
         item["chanfrein"] = details.get("chanfrein")
 
