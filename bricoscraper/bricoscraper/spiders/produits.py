@@ -20,18 +20,19 @@ class ProduitsSpider(scrapy.Spider):
     custom_settings = {
         "FEEDS": {f"data/{name}.csv": {"format": "csv", "overwrite": True}}
     }
-    start_urls = []
-    if Path("data/categories.csv").exists():
-        try:
-            with open("data/categories.csv", mode="r") as fichier_categories:
-                reader_categories = csv.DictReader(fichier_categories)
-                for categorie in reader_categories:
-                    if categorie["contient_produits"] == str(True):
-                        start_urls.append(categorie["url"])
-        except:
-            raise Exception("Erreur de lecture du fichier data/categories.csv")
-    else:
-        raise Exception("Fichier data/categories.csv non trouvé.")
+
+    def start_requests(self):
+        if Path("data/categories.csv").exists():
+            try:
+                with open("data/categories.csv", mode="r") as fichier_categories:
+                    reader_categories = csv.DictReader(fichier_categories)
+                    for categorie in reader_categories:
+                        if categorie["contient_produits"] == str(True):
+                            yield scrapy.Request(categorie["url"], callback=self.parse)
+            except:
+                raise Exception("Erreur de lecture du fichier data/categories.csv")
+        else:
+            raise Exception("Fichier data/categories.csv non trouvé.")
 
     def parse(self, response):
         produits = response.css("ul.products li.product")
